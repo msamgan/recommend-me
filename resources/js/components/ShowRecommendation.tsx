@@ -230,10 +230,10 @@ export default function ShowRecommendation({ show }: ShowRecommendationProps) {
                             </div>
 
                             <div className="p-6">
-                                <div className="flex flex-col md:flex-row gap-6">
+                                <div className="flex flex-col md:flex-row gap-12">
                                     {/* Left column with image and core details */}
-                                    <div className="w-full md:w-1/3">
-                                        <div className="mb-4 flex justify-center md:block">
+                                    <div className="w-full md:w-2/12 space-y-4">
+                                        <div className="flex justify-center md:block">
                                             {show.image_original ? (
                                                 <img
                                                     src={show.image_original ?? show.image_medium ?? undefined}
@@ -247,7 +247,7 @@ export default function ShowRecommendation({ show }: ShowRecommendationProps) {
                                             )}
                                         </div>
 
-                                        <div className="mt-4 space-y-2 text-sm">
+                                        <div className="mt-2 space-y-2 text-sm">
                                             <div className="flex items-center gap-1">
                                                 <Star className="h-4 w-4 text-amber-500" />
                                                 <span>
@@ -309,7 +309,7 @@ export default function ShowRecommendation({ show }: ShowRecommendationProps) {
                                     </div>
 
                                     {/* Right column with details and cast */}
-                                    <div className="w-full md:w-2/3 space-y-6">
+                                    <div className="w-full md:w-10/12 space-y-6">
                                         {/* Criteria Scores - Moved to top */}
                                         {show.criteria_scores && Object.keys(show.criteria_scores).length > 0 && (
                                             <div>

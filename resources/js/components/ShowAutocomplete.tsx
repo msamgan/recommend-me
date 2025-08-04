@@ -324,7 +324,7 @@ export default function ShowAutocomplete({
                             <div className="p-6">
                                 <div className="flex flex-col md:flex-row gap-6">
                                     {/* Left column with image and core details */}
-                                    <div className="w-full md:w-1/3">
+                                    <div className="w-full md:w-2/12 space-y-4">
                                         <div className="mb-4 flex justify-center md:block">
                                             {value.image_original ? (
                                                 <img
@@ -401,7 +401,7 @@ export default function ShowAutocomplete({
                                     </div>
 
                                     {/* Right column with details and cast */}
-                                    <div className="w-full md:w-2/3 space-y-6">
+                                    <div className="w-full md:w-10/12 space-y-6">
                                         {/* Summary */}
                                         {value.summary && (
                                             <div className="space-y-2">
