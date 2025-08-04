@@ -223,10 +223,10 @@ export default function ShowRecommendation({ show }: ShowRecommendationProps) {
                                 </Button>
                             </div>
 
-                            <div className="p-6">
-                                <div className="flex flex-col md:flex-row gap-12">
-                                    {/* Left column with image and core details */}
-                                    <div className="w-full md:w-2/12 space-y-4">
+                            <div className="p-3">
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    {/* Left column with image, core details, criteria scores and recommendation reasons */}
+                                    <div className="w-full md:w-2/12 space-y-6">
                                         <div className="flex justify-center md:block">
                                             {show.image_original ? (
                                                 <img
@@ -240,8 +240,7 @@ export default function ShowRecommendation({ show }: ShowRecommendationProps) {
                                                 </div>
                                             )}
                                         </div>
-
-                                        <div className="mt-2 space-y-2 text-sm">
+                                        <div className="space-y-2 text-sm">
                                             <div className="flex items-center gap-1">
                                                 <Star className="h-4 w-4 text-amber-500" />
                                                 <span>
@@ -303,52 +302,7 @@ export default function ShowRecommendation({ show }: ShowRecommendationProps) {
                                     </div>
 
                                     {/* Right column with details and cast */}
-                                    <div className="w-full md:w-10/12 space-y-6">
-                                        {/* Criteria Scores - Moved to top */}
-                                        {show.criteria_scores && Object.keys(show.criteria_scores).length > 0 && (
-                                            <div>
-                                                <h3 className="font-medium flex items-center gap-1">
-                                                    <BarChart3 className="h-4 w-4" /> Criteria Scores
-                                                </h3>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-                                                    {Object.keys(criteriaLabels).map((key) => (
-                                                        <div key={key} className="flex items-center gap-2">
-                                                            <div className="flex items-center gap-2 min-w-[120px]">
-                                                                {criteriaIcons[key]}
-                                                                <span className="text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
-                                                                    {criteriaLabels[key]}
-                                                                </span>
-                                                            </div>
-                                                            <span className="text-[#f53003] dark:text-[#FF4433] font-medium mr-2">
-                                                                {Math.round((show.criteria_scores?.[key] || 0) * 100 / maxCriteriaScores[key])}%
-                                                            </span>
-                                                            <span className="text-xs ml-1 text-[#706f6c] dark:text-[#A1A09A]">
-                                                                ({show.criteria_scores?.[key] || 0}/{maxCriteriaScores[key]} points)
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Why recommended */}
-                                        {show.recommendation_reasons && show.recommendation_reasons.length > 0 && (
-                                            <div className="p-3 bg-[#f9f9f8] dark:bg-[#1c1c1b] rounded-md border border-[#e3e3e0] dark:border-[#3E3E3A]">
-                                                <h3 className="font-medium flex items-center gap-1 mb-2">
-                                                    <ThumbsUp className="h-4 w-4 text-[#f53003] dark:text-[#FF4433]" />
-                                                    Why we recommend this
-                                                </h3>
-                                                <ul className="space-y-1 text-sm">
-                                                    {show.recommendation_reasons.map((reason, i) => (
-                                                        <li key={i} className="flex items-start">
-                                                            <span className="text-[#f53003] dark:text-[#FF4433] mr-2">•</span>
-                                                            {reason}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
+                                    <div className="w-full md:w-7/12 space-y-6">
                                         {/* Summary */}
                                         {show.summary && (
                                             <div className="space-y-2">
@@ -426,6 +380,55 @@ export default function ShowRecommendation({ show }: ShowRecommendationProps) {
                                                             <div className="text-xs">
                                                                 <p className="font-medium">{person.name}</p>
                                                                 <p className="text-[#706f6c] dark:text-[#A1A09A]">{person.character}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="w-full md:w-3/12 space-y-2">
+                                        {/* Why recommended - moved to left column */}
+                                        {show.recommendation_reasons && show.recommendation_reasons.length > 0 && (
+                                            <div className="p-3 bg-[#f9f9f8] dark:bg-[#1c1c1b] rounded-md border border-[#e3e3e0] dark:border-[#3E3E3A]">
+                                                <h3 className="font-medium flex items-center gap-1 mb-2">
+                                                    <ThumbsUp className="h-4 w-4 text-[#f53003] dark:text-[#FF4433]" />
+                                                    Why we recommend this
+                                                </h3>
+                                                <ul className="space-y-1 text-sm">
+                                                    {show.recommendation_reasons.map((reason, i) => (
+                                                        <li key={i} className="flex items-start">
+                                                            <span className="text-[#f53003] dark:text-[#FF4433] mr-2">•</span>
+                                                            {reason}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {/* Criteria Scores - moved to left column */}
+                                        {show.criteria_scores && Object.keys(show.criteria_scores).length > 0 && (
+                                            <div className="p-3 bg-[#f9f9f8] dark:bg-[#1c1c1b] rounded-md border border-[#e3e3e0] dark:border-[#3E3E3A]">
+                                                <h3 className="font-medium flex items-center gap-1 mb-2">
+                                                    <BarChart3 className="h-4 w-4" /> Criteria Scores
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {Object.keys(criteriaLabels).map((key) => (
+                                                        <div key={key} className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-2 min-w-[120px]">
+                                                                {criteriaIcons[key]}
+                                                                <span className="text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
+                                                                    {criteriaLabels[key]}
+                                                                </span>
+                                                            </div>
+                                                            <div className="ml-auto flex items-center">
+                                                                <span className="text-[#f53003] dark:text-[#FF4433] font-medium mr-2">
+                                                                    {Math.round((show.criteria_scores?.[key] || 0) * 100 / maxCriteriaScores[key])}%
+                                                                </span>
+                                                                <span className="text-xs text-[#706f6c] dark:text-[#A1A09A]">
+                                                                    ({show.criteria_scores?.[key] || 0}/{maxCriteriaScores[key]})
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     ))}
