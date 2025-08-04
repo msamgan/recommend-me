@@ -13,9 +13,10 @@ class GetRecommendations
      *
      * @param array $showIds
      * @param int $limit
+     * @param int $offset
      * @return Collection
      */
-    public function execute(array $showIds, int $limit = 10): Collection
+    public function execute(array $showIds, int $limit = 10, int $offset = 0): Collection
     {
         // Get the user's selected shows with their genres and people
         $selectedShows = Show::query()->with(['genres', 'people'])->whereIn('id', $showIds)->get();
@@ -74,10 +75,11 @@ class GetRecommendations
             ];
         });
 
-        // Sort by score (descending) and take the top results
+        // Sort by score (descending), apply offset and take the specified number of results
         $topRecommendations = $scoredShows
             ->sortByDesc('score')
-            ->take($limit > 0 ? $limit : 30);  // Default to 30 recommendations if not specified
+            ->skip($offset)
+            ->take($limit);
 
         // Add the reasons to each show as a property
         $topRecommendations->each(function ($item) {

@@ -13,6 +13,9 @@ export default function Welcome() {
     const [recommendations, setRecommendations] = useState<Show[]>([]);
     const [showRecommendations, setShowRecommendations] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasMoreRecommendations, setHasMoreRecommendations] = useState(false);
 
     const { data, setData, reset, errors } = useForm({
         shows: [] as number[],
@@ -38,10 +41,16 @@ export default function Welcome() {
         }
 
         setLoading(true);
+        setCurrentPage(1);
 
         try {
-            const response = await axios.post(route('api.shows.recommendations'), data);
-            setRecommendations(response.data);
+            const response = await axios.post(route('api.shows.recommendations'), {
+                ...data,
+                page: 1,
+                limit: 6
+            });
+            setRecommendations(response.data.shows);
+            setHasMoreRecommendations(response.data.hasMore);
             setShowRecommendations(true);
         } catch (error) {
             console.error('Error getting recommendations:', error);
@@ -50,10 +59,35 @@ export default function Welcome() {
         }
     };
 
+    const loadMoreRecommendations = async () => {
+        if (loadingMore || !hasMoreRecommendations) return;
+
+        setLoadingMore(true);
+        const nextPage = currentPage + 1;
+
+        try {
+            const response = await axios.post(route('api.shows.recommendations'), {
+                ...data,
+                page: nextPage,
+                limit: 6
+            });
+
+            setRecommendations([...recommendations, ...response.data.shows]);
+            setHasMoreRecommendations(response.data.hasMore);
+            setCurrentPage(nextPage);
+        } catch (error) {
+            console.error('Error loading more recommendations:', error);
+        } finally {
+            setLoadingMore(false);
+        }
+    };
+
     const resetForm = () => {
         setFavoriteShows([null, null, null]);
         setRecommendations([]);
         setShowRecommendations(false);
+        setCurrentPage(1);
+        setHasMoreRecommendations(false);
         reset('shows');
     };
 
@@ -196,6 +230,19 @@ export default function Welcome() {
                                                     <ShowRecommendation key={show.id} show={show} />
                                                 ))}
                                             </div>
+
+                                            {/* Load More button */}
+                                            {hasMoreRecommendations && (
+                                                <div className="mt-6 text-center">
+                                                    <Button
+                                                        onClick={loadMoreRecommendations}
+                                                        disabled={loadingMore}
+                                                        className="bg-[#f9f9f8] hover:bg-[#efefe9] text-[#1b1b18] border border-[#e3e3e0] dark:bg-[#1c1c1b] dark:hover:bg-[#252522] dark:text-[#EDEDEC] dark:border-[#3E3E3A]"
+                                                    >
+                                                        {loadingMore ? 'Loading...' : 'Load More Recommendations'}
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
                                     </Card>
                                 </div>

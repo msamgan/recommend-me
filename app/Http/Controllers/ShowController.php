@@ -59,10 +59,24 @@ class ShowController extends Controller
         $request->validate([
             'shows' => 'required|array|min:1',
             'shows.*' => 'integer|exists:shows,id',
+            'page' => 'sometimes|integer|min:1',
+            'limit' => 'sometimes|integer|min:1|max:24',
         ]);
 
         $showIds = $request->input('shows');
-        $recommendations = $getRecommendations->execute($showIds, 12);
+        $page = $request->input('page', 1);
+        $limit = $request->input('limit', 6);
+        $offset = ($page - 1) * $limit;
+
+        $recommendations = $getRecommendations->execute($showIds, $limit + 1, $offset);
+
+        // Check if there are more results
+        $hasMore = $recommendations->count() > $limit;
+
+        // If there are more results, remove the extra one
+        if ($hasMore) {
+            $recommendations = $recommendations->take($limit);
+        }
 
         // Transform the shows to include genres and cast as arrays of relevant data
         $transformedShows = $recommendations->map(function ($show) {
@@ -88,6 +102,10 @@ class ShowController extends Controller
             return $showArray;
         });
 
-        return response()->json($transformedShows);
+        return response()->json([
+            'shows' => $transformedShows,
+            'hasMore' => $hasMore,
+            'page' => $page
+        ]);
     }
 }
