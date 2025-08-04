@@ -1,0 +1,236 @@
+<?php
+
+namespace App\Actions\Shows;
+
+use App\Models\Show;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+
+class GetRecommendations
+{
+    /**
+     * Generate recommendations based on user's favorite shows
+     *
+     * @param array $showIds
+     * @param int $limit
+     * @return Collection
+     */
+    public function execute(array $showIds, int $limit = 10): Collection
+    {
+        // Get the user's selected shows with their genres and people
+        $selectedShows = Show::query()->with(['genres', 'people'])->whereIn('id', $showIds)->get();
+
+        if ($selectedShows->isEmpty()) {
+            return collect([]);
+        }
+
+        // Extract all genres from the selected shows
+        $genres = $selectedShows->flatMap(fn($show) => $show->genres->pluck('id'))->unique();
+
+        // Extract key people (actors/crew) from the selected shows
+        $people = $selectedShows->flatMap(fn($show) => $show->people->pluck('id'))->unique();
+
+        // If no genres or people are found, return an empty collection to avoid query errors
+        if ($genres->isEmpty() && $people->isEmpty()) {
+            return collect([]);
+        }
+
+        // Find shows with similar genres and/or people, excluding the user's selected shows
+        $recommendedShowsQuery = Show::query()->with(['genres', 'people'])->whereNotIn('id', $showIds);
+
+        if ($genres->isNotEmpty() || $people->isNotEmpty()) {
+            $recommendedShowsQuery->where(function ($query) use ($genres, $people) {
+                if ($genres->isNotEmpty()) {
+                    $query->whereHas('genres', function ($subQuery) use ($genres) {
+                        $subQuery->whereIn('genres.id', $genres);
+                    });
+                }
+
+                if ($people->isNotEmpty()) {
+                    $method = $genres->isNotEmpty() ? 'orWhereHas' : 'whereHas';
+                    $query->$method('people', function ($subQuery) use ($people) {
+                        $subQuery->whereIn('people.id', $people);
+                    });
+                }
+            });
+        }
+
+        $recommendedShows = $recommendedShowsQuery->orderByDesc('weight')->limit(3000)->get();
+
+        // If no recommendations found, return an empty collection
+        if ($recommendedShows->isEmpty()) {
+            return new Collection();
+        }
+
+        // Calculate similarity scores and reasons for each recommended show
+        $scoredShows = $recommendedShows->map(function ($show) use ($selectedShows, $genres, $people) {
+            $result = $this->calculateSimilarityScore($show, $selectedShows, $genres, $people);
+            return [
+                'show' => $show,
+                'score' => $result['score'],
+                'reasons' => $result['reasons'],
+                'display_score' => $result['display_score'],
+                'criteria_scores' => $result['criteria_scores']
+            ];
+        });
+
+        // Sort by score (descending) and take the top results
+        $topRecommendations = $scoredShows
+            ->sortByDesc('score')
+            ->take($limit > 0 ? $limit : 30);  // Default to 30 recommendations if not specified
+
+        // Add the reasons to each show as a property
+        $topRecommendations->each(function ($item) {
+            $item['show']->recommendation_reasons = $item['reasons'];
+            $item['show']->match_score = $item['display_score'];
+            $item['show']->criteria_scores = $item['criteria_scores'];
+        });
+
+        return $topRecommendations->pluck('show');
+    }
+
+    /**
+     * Calculate a similarity score between a show and the user's selected shows
+     */
+    private function calculateSimilarityScore(
+        Show       $show,
+        Collection $selectedShows,
+        Collection $selectedGenres,
+        Collection $selectedPeople
+    ): array
+    {
+        $score = 0;
+        $reasons = [];
+        $criteriaScores = [];
+
+        // Genre matching (30% of score)
+        $genreIds = $show->genres->pluck('id');
+        $genreMatches = $genreIds->intersect($selectedGenres)->count();
+        $genreScore = $genreMatches > 0 ?
+            ($genreMatches / max($genreIds->count(), $selectedGenres->count())) * 30 : 0;
+        $criteriaScores['genre'] = round($genreScore);
+
+        if ($genreMatches > 0) {
+            $commonGenres = $show->genres->whereIn('id', $selectedGenres)->pluck('name');
+            if ($commonGenres->count() > 0) {
+                $reasons[] = "Matches " . $commonGenres->count() . " " . ($commonGenres->count() > 1 ? "genres" : "genre") .
+                    " with your selections";
+            }
+        }
+
+        // Cast/crew matching (25% of score)
+        $peopleIds = $show->people->pluck('id');
+
+        // Log for debugging - this helps identify if the show has people attached
+        if ($peopleIds->isEmpty()) {
+            Log::info('Show ID ' . $show->id . ' has no people');
+        }
+
+        $peopleMatches = $peopleIds->intersect($selectedPeople)->count();
+
+        // Enhanced calculation that gives points even for a single match
+        if ($peopleMatches > 0) {
+            // Enhance the formula to give more weight to even a single match
+            $peopleScore = min(25, (($peopleMatches * 5) + 10));
+        } else {
+            $peopleScore = 0;
+        }
+
+        $criteriaScores['cast'] = round($peopleScore);
+
+        if ($peopleMatches > 0) {
+            $commonPeople = $show->people->whereIn('id', $selectedPeople)
+                ->sortByDesc(function ($person) use ($selectedShows) {
+                    // Prioritize lead actors in the explanation
+                    return $person->pivot->main_cast ?? false ? 2 : 1;
+                })
+                ->take(2)
+                ->pluck('name');
+
+            if ($commonPeople->count() > 0) {
+                $reasons[] = "Features " . ($commonPeople->count() > 1 ? "actors" : "actor") . " " . $commonPeople->join(", ", " and ");
+            }
+        }
+
+        // Rating similarity (10% of score)
+        $ratingScore = 0;
+        if ($show->rating && $selectedShows->avg('rating')) {
+            $avgRating = $selectedShows->avg('rating');
+            $ratingDiff = abs($show->rating - $avgRating);
+            $ratingScore = max(0, 10 - ($ratingDiff * 2)); // Decreases as difference increases
+            $criteriaScores['rating'] = round($ratingScore);
+
+            if ($ratingDiff < 1) {
+                $reasons[] = "Has a similar rating to shows you like";
+            }
+        }
+
+        // Type matching (10% of score)
+        $typeScore = 0;
+        $typeCount = $selectedShows->countBy('type');
+        $dominantType = array_keys($typeCount->sortDesc()->toArray())[0] ?? null;
+        if ($dominantType && $show->type === $dominantType) {
+            $typeScore = 10;
+            $criteriaScores['type'] = 10;
+            $reasons[] = "Matches the type of shows you prefer";
+        } else {
+            $criteriaScores['type'] = 0;
+        }
+
+        // Language matching (10% of score)
+        $languageScore = 0;
+        $langCount = $selectedShows->countBy('language');
+        $dominantLang = array_keys($langCount->sortDesc()->toArray())[0] ?? null;
+        if ($dominantLang && $show->language === $dominantLang) {
+            $languageScore = 10;
+            $criteriaScores['language'] = 10;
+            $reasons[] = "In your preferred language";
+        } else {
+            $criteriaScores['language'] = 0;
+        }
+
+        // Weight matching (5% of score) - shows with similar popularity
+        $weightScore = 0;
+        $avgWeight = $selectedShows->avg('weight');
+        if ($show->weight && $avgWeight) {
+            $weightDiff = abs($show->weight - $avgWeight);
+            $weightScore = max(0, 5 - ($weightDiff / 20));
+            $criteriaScores['popularity'] = round($weightScore);
+        } else {
+            $criteriaScores['popularity'] = 0;
+        }
+
+        // Run time matching (5% of score) - shows with similar duration
+        $runtimeScore = 0;
+        $avgRuntime = $selectedShows->avg('runtime');
+        if ($show->runtime && $avgRuntime) {
+            $runtimeDiff = abs($show->runtime - $avgRuntime);
+            $runtimeScore = max(0, 5 - ($runtimeDiff / 10));
+            $criteriaScores['runtime'] = round($runtimeScore);
+        } else {
+            $criteriaScores['runtime'] = 0;
+        }
+
+        // Status matching (5% of score) - preference for currently running shows
+        $statusScore = 0;
+        $statusCount = $selectedShows->countBy('status');
+        $dominantStatus = array_keys($statusCount->sortDesc()->toArray())[0] ?? null;
+        if ($dominantStatus && $show->status === $dominantStatus) {
+            $statusScore = 5;
+            $criteriaScores['status'] = 5;
+        } else {
+            $criteriaScores['status'] = 0;
+        }
+
+        // Calculate final score (sum of all components)
+        $finalScore = $genreScore + $peopleScore + $ratingScore + $typeScore +
+                     $languageScore + $weightScore + $runtimeScore + $statusScore;
+
+        return [
+            'score' => $finalScore,
+            'display_score' => min(100, round($finalScore)),
+            'reasons' => $reasons,
+            'criteria_scores' => $criteriaScores
+        ];
+    }
+}
