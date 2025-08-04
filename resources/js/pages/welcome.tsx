@@ -103,8 +103,8 @@ export default function Welcome() {
                 <main className="flex flex-1 items-center justify-center p-6">
                     <div className={`w-full ${showRecommendations ? 'max-w-6xl' : 'max-w-2xl'}`}>
                         <div className={`flex flex-col ${showRecommendations ? 'md:flex-row' : ''} gap-6`}>
-                            {/* Form section */}
-                            <div className={`${showRecommendations ? 'md:w-2/5' : 'w-full'}`}>
+                            {/* Form section - Made sticky */}
+                            <div className={`${showRecommendations ? 'md:w-2/5' : 'w-full'} ${showRecommendations ? 'md:sticky md:top-6 md:self-start' : ''}`}>
                                 <Card className="overflow-hidden border-[#e3e3e0] bg-white shadow-sm dark:border-[#3E3E3A] dark:bg-[#161615]">
                                     <div className="border-b border-[#e3e3e0] bg-[#f9f9f8] p-6 dark:border-[#3E3E3A] dark:bg-[#1c1c1b]">
                                         <h1 className="text-2xl font-semibold">Tell us what you like</h1>
