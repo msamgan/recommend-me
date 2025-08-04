@@ -53,45 +53,39 @@ interface ShowRecommendationProps {
 const criteriaLabels: Record<string, string> = {
     genre: "Genre Match",
     cast: "Cast/Crew Match",
+    release_year: "Release Year Match",
     rating: "Rating Similarity",
-    status: "Status Match",
     type: "Type Match",
-    // New criteria
     language: "Language Match",
+    popularity: "Popularity Match",
     runtime: "Runtime Similarity",
-    premiere_year: "Release Period",
-    network: "Network/Platform",
-    popularity: "Popularity Match"
+    status: "Status Match"
 };
 
 // Define the criteria icon map
 const criteriaIcons: Record<string, React.ReactNode> = {
     genre: <Film className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
     cast: <Users className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
+    release_year: <CalendarIcon className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
     rating: <Star className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
     status: <Tv className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
     type: <Info className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
-    // New criteria icons
-    language: <Speech className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
+    language: <Globe className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
     runtime: <ClockIcon className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
-    premiere_year: <CalendarIcon className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
-    network: <Network className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />,
     popularity: <BarChart className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />
 };
 
 // Define max scores for criteria
 const maxCriteriaScores: Record<string, number> = {
-    genre: 30,      // Updated from 40
-    cast: 25,       // Updated from 30
-    rating: 10,     // Updated from 15
-    status: 5,
+    genre: 25,      // Updated from 30
+    cast: 25,
+    release_year: 10, // New criterion
+    rating: 10,
     type: 8,        // Updated from 10
-    // New criteria max scores
-    language: 5,
+    language: 8,    // Updated from 10
+    popularity: 5,
     runtime: 5,
-    premiere_year: 4,
-    network: 4,
-    popularity: 4
+    status: 4       // Updated from 5
 };
 
 export default function ShowRecommendation({ show }: ShowRecommendationProps) {
