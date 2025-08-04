@@ -53,7 +53,7 @@ final class GetRecommendations
             });
         }
 
-        $recommendedShows = $recommendedShowsQuery->orderByDesc('weight')->limit(1500)->get();
+        $recommendedShows = $recommendedShowsQuery->orderByDesc('weight')->limit(1000)->get();
 
         // If no recommendations found, return an empty collection
         if ($recommendedShows->isEmpty()) {
