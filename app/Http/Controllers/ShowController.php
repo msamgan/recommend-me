@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Actions\Shows\GetRecommendations;
@@ -7,13 +9,10 @@ use App\Models\Show;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class ShowController extends Controller
+final class ShowController extends Controller
 {
     /**
      * Search for shows by name
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function search(Request $request): JsonResponse
     {
@@ -49,10 +48,6 @@ class ShowController extends Controller
 
     /**
      * Get recommendations based on selected shows
-     *
-     * @param Request $request
-     * @param GetRecommendations $getRecommendations
-     * @return JsonResponse
      */
     public function getRecommendations(Request $request, GetRecommendations $getRecommendations): JsonResponse
     {
@@ -105,7 +100,7 @@ class ShowController extends Controller
         return response()->json([
             'shows' => $transformedShows,
             'hasMore' => $hasMore,
-            'page' => $page
+            'page' => $page,
         ]);
     }
 }

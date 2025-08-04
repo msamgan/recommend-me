@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, ExternalLink, Globe, Info, MessageCircle, Star, Tv, Users, X } from "lucide-react";
-import axios from "axios";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import axios from 'axios';
+import { Calendar, Clock, ExternalLink, Globe, Info, MessageCircle, Star, Tv, Users, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 export type Cast = {
     name: string;
@@ -53,58 +53,57 @@ interface ShowAutocompleteProps {
 export default function ShowAutocomplete({
     value,
     onChange,
-    placeholder = "Search for a show...",
+    placeholder = 'Search for a show...',
     required = false,
     disabled = false,
     index,
 }: ShowAutocompleteProps) {
-    const [query, setQuery] = useState("");
+    const [query, setQuery] = useState('');
     const [results, setResults] = useState<Show[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
 
-    const searchShows = useCallback(
-        async (searchQuery: string) => {
-            if (searchQuery.length < 2) {
-                setResults([]);
-                return;
-            }
+    const searchShows = useCallback(async (searchQuery: string) => {
+        if (searchQuery.length < 2) {
+            setResults([]);
+            return;
+        }
 
-            setIsSearching(true);
-            try {
-                const response = await axios.get(route("api.shows.search", {
+        setIsSearching(true);
+        try {
+            const response = await axios.get(
+                route('api.shows.search', {
                     query: searchQuery,
-                }));
-                setResults(response.data);
-            } catch (error) {
-                console.error("Error searching shows:", error);
-                setResults([]);
-            } finally {
-                setIsSearching(false);
-            }
-        },
-        []
-    );
+                }),
+            );
+            setResults(response.data);
+        } catch (error) {
+            console.error('Error searching shows:', error);
+            setResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    }, []);
 
     // Format date to a more readable format
     const formatDate = (dateString?: string) => {
-        if (!dateString) return "Unknown";
+        if (!dateString) return 'Unknown';
         const date = new Date(dateString);
-        return date.toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' });
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
     // Format schedule days into a readable string
     const formatScheduleDays = (days?: string[]) => {
-        if (!days || days.length === 0) return "Not specified";
-        if (days.length === 7) return "Every day";
-        return days.join(", ");
+        if (!days || days.length === 0) return 'Not specified';
+        if (days.length === 7) return 'Every day';
+        return days.join(', ');
     };
 
     // Strip HTML tags from summary
     const stripHtml = (html?: string) => {
-        if (!html) return "";
-        return html.replace(/<[^>]*>/g, "");
+        if (!html) return '';
+        return html.replace(/<[^>]*>/g, '');
     };
 
     useEffect(() => {
@@ -119,7 +118,7 @@ export default function ShowAutocomplete({
 
     const handleSelect = (show: Show) => {
         onChange(show);
-        setQuery("");
+        setQuery('');
         setResults([]);
         setIsFocused(false);
     };
@@ -138,20 +137,12 @@ export default function ShowAutocomplete({
             <div className="relative">
                 {value ? (
                     <div className="flex items-center gap-2 rounded-md border border-[#3E3E3A] bg-white p-2 dark:bg-[#161615]">
-                        {value.image_medium && (
-                            <img
-                                src={value.image_medium}
-                                alt={value.name}
-                                className="h-12 w-8 rounded object-cover"
-                            />
-                        )}
+                        {value.image_medium && <img src={value.image_medium} alt={value.name} className="h-12 w-8 rounded object-cover" />}
                         <div className="flex-1">
                             <div className="flex items-center gap-2">
-                                <p className="font-medium text-sm">{value.name}</p>
+                                <p className="text-sm font-medium">{value.name}</p>
                                 {value.status && (
-                                    <Badge
-                                        className={`text-xs ${value.status === 'Running' ? 'bg-emerald-600' : 'bg-gray-500'}`}
-                                    >
+                                    <Badge className={`text-xs ${value.status === 'Running' ? 'bg-emerald-600' : 'bg-gray-500'}`}>
                                         {value.status}
                                     </Badge>
                                 )}
@@ -210,10 +201,10 @@ export default function ShowAutocomplete({
                             required={required}
                             disabled={disabled}
                             className="w-full"
-                            aria-label={`Favorite show ${index ? index + 1 : ""}`}
+                            aria-label={`Favorite show ${index ? index + 1 : ''}`}
                         />
                         {isSearching && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <div className="absolute top-1/2 right-3 -translate-y-1/2">
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#f53003] border-t-transparent dark:border-[#FF4433]"></div>
                             </div>
                         )}
@@ -230,23 +221,17 @@ export default function ShowAutocomplete({
                             onMouseDown={() => handleSelect(show)}
                         >
                             {show.image_medium ? (
-                                <img
-                                    src={show.image_medium}
-                                    alt={show.name}
-                                    className="h-12 w-8 rounded object-cover"
-                                />
+                                <img src={show.image_medium} alt={show.name} className="h-12 w-8 rounded object-cover" />
                             ) : (
-                                <div className="h-12 w-8 rounded bg-[#e3e3e0] dark:bg-[#3E3E3A] flex items-center justify-center">
+                                <div className="flex h-12 w-8 items-center justify-center rounded bg-[#e3e3e0] dark:bg-[#3E3E3A]">
                                     <Tv className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />
                                 </div>
                             )}
                             <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                    <p className="font-medium text-sm">{show.name}</p>
+                                    <p className="text-sm font-medium">{show.name}</p>
                                     {show.status && (
-                                        <Badge
-                                            className={`text-xs ${show.status === 'Running' ? 'bg-emerald-600' : 'bg-gray-500'}`}
-                                        >
+                                        <Badge className={`text-xs ${show.status === 'Running' ? 'bg-emerald-600' : 'bg-gray-500'}`}>
                                             {show.status}
                                         </Badge>
                                     )}
@@ -270,23 +255,23 @@ export default function ShowAutocomplete({
                                 {show.genres && show.genres.length > 0 && (
                                     <div className="mt-1 flex flex-wrap gap-1">
                                         {show.genres.slice(0, 3).map((genre, i) => (
-                                            <Badge key={i} variant="outline" className="text-[10px] px-1 py-0 h-4 border-[#e3e3e0] dark:border-[#3E3E3A]">
+                                            <Badge
+                                                key={i}
+                                                variant="outline"
+                                                className="h-4 border-[#e3e3e0] px-1 py-0 text-[10px] dark:border-[#3E3E3A]"
+                                            >
                                                 {genre}
                                             </Badge>
                                         ))}
                                         {show.genres.length > 3 && (
-                                            <span className="text-[10px] text-[#706f6c] dark:text-[#A1A09A]">
-                                                +{show.genres.length - 3} more
-                                            </span>
+                                            <span className="text-[10px] text-[#706f6c] dark:text-[#A1A09A]">+{show.genres.length - 3} more</span>
                                         )}
                                     </div>
                                 )}
                             </div>
                             {show.rating && typeof show.rating === 'number' && (
                                 <div className="ml-2 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#e3e3e0] bg-[#FDFDFC] dark:border-[#3E3E3A] dark:bg-[#0a0a0a]">
-                                    <span className="text-xs font-medium">
-                                        {show.rating.toFixed(1)}
-                                    </span>
+                                    <span className="text-xs font-medium">{show.rating.toFixed(1)}</span>
                                 </div>
                             )}
                         </div>
@@ -297,43 +282,33 @@ export default function ShowAutocomplete({
             {/* Show Details Dialog */}
             {value && showDetails && (
                 <Dialog open={showDetails} onOpenChange={setShowDetails}>
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white dark:bg-[#161615] rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
-                            <div className="p-4 border-b border-[#e3e3e0] dark:border-[#3E3E3A] flex justify-between">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                        <div className="max-h-[90vh] w-full max-w-4xl overflow-auto rounded-lg bg-white shadow-lg dark:bg-[#161615]">
+                            <div className="flex justify-between border-b border-[#e3e3e0] p-4 dark:border-[#3E3E3A]">
+                                <h2 className="flex items-center gap-2 text-xl font-semibold">
                                     {value.name}
                                     {value.status && (
-                                        <Badge
-                                            className={`${value.status === 'Running' ? 'bg-emerald-600' : 'bg-gray-500'}`}
-                                        >
-                                            {value.status}
-                                        </Badge>
+                                        <Badge className={`${value.status === 'Running' ? 'bg-emerald-600' : 'bg-gray-500'}`}>{value.status}</Badge>
                                     )}
                                 </h2>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setShowDetails(false)}
-                                    className="h-8 w-8"
-                                >
+                                <Button type="button" variant="ghost" size="icon" onClick={() => setShowDetails(false)} className="h-8 w-8">
                                     <X className="h-4 w-4" />
                                 </Button>
                             </div>
 
                             <div className="p-6">
-                                <div className="flex flex-col md:flex-row gap-6">
+                                <div className="flex flex-col gap-6 md:flex-row">
                                     {/* Left column with image and core details */}
-                                    <div className="w-full md:w-2/12 space-y-4">
+                                    <div className="w-full space-y-4 md:w-2/12">
                                         <div className="mb-4 flex justify-center md:block">
                                             {value.image_original ? (
                                                 <img
                                                     src={value.image_original ?? value.image_medium ?? undefined}
                                                     alt={value.name}
-                                                    className="rounded-md w-full max-w-[240px] object-cover shadow-md"
+                                                    className="w-full max-w-[240px] rounded-md object-cover shadow-md"
                                                 />
                                             ) : (
-                                                <div className="rounded-md h-72 w-48 bg-[#e3e3e0] dark:bg-[#3E3E3A] flex items-center justify-center">
+                                                <div className="flex h-72 w-48 items-center justify-center rounded-md bg-[#e3e3e0] dark:bg-[#3E3E3A]">
                                                     <Tv className="h-16 w-16 text-[#706f6c] dark:text-[#A1A09A]" />
                                                 </div>
                                             )}
@@ -343,9 +318,7 @@ export default function ShowAutocomplete({
                                             <div className="flex items-center gap-1">
                                                 <Star className="h-4 w-4 text-amber-500" />
                                                 <span>
-                                                    {value.rating && typeof value.rating === 'number'
-                                                        ? `${value.rating.toFixed(1)}/10`
-                                                        : 'Not rated'}
+                                                    {value.rating && typeof value.rating === 'number' ? `${value.rating.toFixed(1)}/10` : 'Not rated'}
                                                 </span>
                                             </div>
 
@@ -401,16 +374,14 @@ export default function ShowAutocomplete({
                                     </div>
 
                                     {/* Right column with details and cast */}
-                                    <div className="w-full md:w-10/12 space-y-6">
+                                    <div className="w-full space-y-6 md:w-10/12">
                                         {/* Summary */}
                                         {value.summary && (
                                             <div className="space-y-2">
-                                                <h3 className="font-medium flex items-center gap-1">
+                                                <h3 className="flex items-center gap-1 font-medium">
                                                     <MessageCircle className="h-4 w-4" /> Summary
                                                 </h3>
-                                                <p className="text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
-                                                    {stripHtml(value.summary)}
-                                                </p>
+                                                <p className="text-sm text-[#1b1b18] dark:text-[#EDEDEC]">{stripHtml(value.summary)}</p>
                                             </div>
                                         )}
 
@@ -420,7 +391,10 @@ export default function ShowAutocomplete({
                                                 <h3 className="font-medium">Genres</h3>
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {value.genres.map((genre, i) => (
-                                                        <Badge key={i} className="bg-[#f5f5f3] text-[#1b1b18] dark:bg-[#252524] dark:text-[#EDEDEC] border border-[#e3e3e0] dark:border-[#3E3E3A]">
+                                                        <Badge
+                                                            key={i}
+                                                            className="border border-[#e3e3e0] bg-[#f5f5f3] text-[#1b1b18] dark:border-[#3E3E3A] dark:bg-[#252524] dark:text-[#EDEDEC]"
+                                                        >
                                                             {genre}
                                                         </Badge>
                                                     ))}
@@ -429,28 +403,38 @@ export default function ShowAutocomplete({
                                         )}
 
                                         {/* Network & Schedule */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             <div className="space-y-2">
                                                 <h3 className="font-medium">Network & Channel</h3>
-                                                <div className="text-sm space-y-1 text-[#1b1b18] dark:text-[#EDEDEC]">
-                                                    <p><span className="text-[#706f6c] dark:text-[#A1A09A]">Network:</span> {value.network || 'N/A'}</p>
+                                                <div className="space-y-1 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
+                                                    <p>
+                                                        <span className="text-[#706f6c] dark:text-[#A1A09A]">Network:</span> {value.network || 'N/A'}
+                                                    </p>
                                                     {value.network_country && (
-                                                        <p><span className="text-[#706f6c] dark:text-[#A1A09A]">Country:</span> {value.network_country}</p>
+                                                        <p>
+                                                            <span className="text-[#706f6c] dark:text-[#A1A09A]">Country:</span>{' '}
+                                                            {value.network_country}
+                                                        </p>
                                                     )}
                                                     {value.web_channel && (
-                                                        <p><span className="text-[#706f6c] dark:text-[#A1A09A]">Web Channel:</span> {value.web_channel}</p>
+                                                        <p>
+                                                            <span className="text-[#706f6c] dark:text-[#A1A09A]">Web Channel:</span>{' '}
+                                                            {value.web_channel}
+                                                        </p>
                                                     )}
                                                 </div>
                                             </div>
 
                                             <div className="space-y-2">
                                                 <h3 className="font-medium">Schedule</h3>
-                                                <div className="text-sm space-y-1 text-[#1b1b18] dark:text-[#EDEDEC]">
+                                                <div className="space-y-1 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
                                                     <p>
-                                                        <span className="text-[#706f6c] dark:text-[#A1A09A]">Days:</span> {formatScheduleDays(value.schedule_days)}
+                                                        <span className="text-[#706f6c] dark:text-[#A1A09A]">Days:</span>{' '}
+                                                        {formatScheduleDays(value.schedule_days)}
                                                     </p>
                                                     <p>
-                                                        <span className="text-[#706f6c] dark:text-[#A1A09A]">Time:</span> {value.schedule_time || 'Not specified'}
+                                                        <span className="text-[#706f6c] dark:text-[#A1A09A]">Time:</span>{' '}
+                                                        {value.schedule_time || 'Not specified'}
                                                     </p>
                                                 </div>
                                             </div>
@@ -459,20 +443,20 @@ export default function ShowAutocomplete({
                                         {/* Cast */}
                                         {value.cast && value.cast.length > 0 && (
                                             <div className="space-y-3">
-                                                <h3 className="font-medium flex items-center gap-1">
+                                                <h3 className="flex items-center gap-1 font-medium">
                                                     <Users className="h-4 w-4" /> Cast
                                                 </h3>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                                                     {value.cast.map((person, i) => (
                                                         <div key={i} className="flex items-center gap-2">
                                                             {person.image_medium ? (
                                                                 <img
                                                                     src={person.image_medium}
                                                                     alt={person.name}
-                                                                    className="w-8 h-8 rounded-full object-cover"
+                                                                    className="h-8 w-8 rounded-full object-cover"
                                                                 />
                                                             ) : (
-                                                                <div className="w-8 h-8 rounded-full bg-[#e3e3e0] dark:bg-[#3E3E3A] flex items-center justify-center">
+                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e3e3e0] dark:bg-[#3E3E3A]">
                                                                     <Users className="h-4 w-4 text-[#706f6c] dark:text-[#A1A09A]" />
                                                                 </div>
                                                             )}

@@ -1,11 +1,11 @@
-import { type SharedData } from '@/types';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import axios from 'axios';
 import ShowAutocomplete, { Show } from '@/components/ShowAutocomplete';
 import ShowRecommendation from '@/components/ShowRecommendation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { type SharedData } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import axios from 'axios';
+import { useState } from 'react';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
@@ -27,9 +27,7 @@ export default function Welcome() {
         setFavoriteShows(newFavoriteShows);
 
         // Update the form data with show IDs
-        const showIds = newFavoriteShows
-            .filter((show): show is Show => show !== null)
-            .map(show => show.id);
+        const showIds = newFavoriteShows.filter((show): show is Show => show !== null).map((show) => show.id);
         setData('shows', showIds);
     };
 
@@ -47,7 +45,7 @@ export default function Welcome() {
             const response = await axios.post(route('api.shows.recommendations'), {
                 ...data,
                 page: 1,
-                limit: 6
+                limit: 6,
             });
             setRecommendations(response.data.shows);
             setHasMoreRecommendations(response.data.hasMore);
@@ -69,7 +67,7 @@ export default function Welcome() {
             const response = await axios.post(route('api.shows.recommendations'), {
                 ...data,
                 page: nextPage,
-                limit: 6
+                limit: 6,
             });
 
             setRecommendations([...recommendations, ...response.data.shows]);
@@ -91,7 +89,7 @@ export default function Welcome() {
         reset('shows');
     };
 
-    const atLeastOneShowSelected = favoriteShows.some(show => show !== null);
+    const atLeastOneShowSelected = favoriteShows.some((show) => show !== null);
 
     return (
         <>
@@ -138,7 +136,9 @@ export default function Welcome() {
                     <div className={`w-full ${showRecommendations ? 'max-w-6xl' : 'max-w-2xl'}`}>
                         <div className={`flex flex-col ${showRecommendations ? 'md:flex-row' : ''} gap-6`}>
                             {/* Form section - Made sticky */}
-                            <div className={`${showRecommendations ? 'md:w-2/5' : 'w-full'} ${showRecommendations ? 'md:sticky md:top-6 md:self-start' : ''}`}>
+                            <div
+                                className={`${showRecommendations ? 'md:w-2/5' : 'w-full'} ${showRecommendations ? 'md:sticky md:top-6 md:self-start' : ''}`}
+                            >
                                 <Card className="overflow-hidden border-[#e3e3e0] bg-white shadow-sm dark:border-[#3E3E3A] dark:bg-[#161615]">
                                     <div className="border-b border-[#e3e3e0] bg-[#f9f9f8] p-6 dark:border-[#3E3E3A] dark:bg-[#1c1c1b]">
                                         <h1 className="text-2xl font-semibold">Tell us what you like</h1>
@@ -163,32 +163,20 @@ export default function Welcome() {
                                             </div>
 
                                             <div>
-                                                <label className="mb-2 block text-sm font-medium">
-                                                    Another show you enjoy (optional)
-                                                </label>
-                                                <ShowAutocomplete
-                                                    value={favoriteShows[1]}
-                                                    onChange={(show) => updateShow(1, show)}
-                                                    index={1}
-                                                />
+                                                <label className="mb-2 block text-sm font-medium">Another show you enjoy (optional)</label>
+                                                <ShowAutocomplete value={favoriteShows[1]} onChange={(show) => updateShow(1, show)} index={1} />
                                             </div>
 
                                             <div>
-                                                <label className="mb-2 block text-sm font-medium">
-                                                    One more show you like (optional)
-                                                </label>
-                                                <ShowAutocomplete
-                                                    value={favoriteShows[2]}
-                                                    onChange={(show) => updateShow(2, show)}
-                                                    index={2}
-                                                />
+                                                <label className="mb-2 block text-sm font-medium">One more show you like (optional)</label>
+                                                <ShowAutocomplete value={favoriteShows[2]} onChange={(show) => updateShow(2, show)} index={2} />
                                             </div>
 
                                             <div className="pt-2">
                                                 <Button
                                                     type="submit"
                                                     disabled={!atLeastOneShowSelected || loading}
-                                                    className="w-full bg-[#f53003] hover:bg-[#d62a02] text-white dark:bg-[#FF4433] dark:hover:bg-[#e53c2c]"
+                                                    className="w-full bg-[#f53003] text-white hover:bg-[#d62a02] dark:bg-[#FF4433] dark:hover:bg-[#e53c2c]"
                                                 >
                                                     {loading ? 'Processing...' : 'Get Recommendations'}
                                                 </Button>
@@ -197,7 +185,7 @@ export default function Welcome() {
                                                     <Button
                                                         type="button"
                                                         onClick={resetForm}
-                                                        className="w-full mt-2 bg-transparent border border-[#3E3E3A] text-[#1b1b18] hover:bg-[#f5f5f3] dark:text-[#EDEDEC] dark:hover:bg-[#161615]"
+                                                        className="mt-2 w-full border border-[#3E3E3A] bg-transparent text-[#1b1b18] hover:bg-[#f5f5f3] dark:text-[#EDEDEC] dark:hover:bg-[#161615]"
                                                     >
                                                         Start Over
                                                     </Button>
@@ -237,7 +225,7 @@ export default function Welcome() {
                                                     <Button
                                                         onClick={loadMoreRecommendations}
                                                         disabled={loadingMore}
-                                                        className="bg-[#f9f9f8] hover:bg-[#efefe9] text-[#1b1b18] border border-[#e3e3e0] dark:bg-[#1c1c1b] dark:hover:bg-[#252522] dark:text-[#EDEDEC] dark:border-[#3E3E3A]"
+                                                        className="border border-[#e3e3e0] bg-[#f9f9f8] text-[#1b1b18] hover:bg-[#efefe9] dark:border-[#3E3E3A] dark:bg-[#1c1c1b] dark:text-[#EDEDEC] dark:hover:bg-[#252522]"
                                                     >
                                                         {loadingMore ? 'Loading...' : 'Load More Recommendations'}
                                                     </Button>
@@ -253,7 +241,7 @@ export default function Welcome() {
                                 <div className="md:w-3/5">
                                     <Card className="overflow-hidden border-[#e3e3e0] bg-white shadow-sm dark:border-[#3E3E3A] dark:bg-[#161615]">
                                         <div className="p-6 text-center">
-                                            <h2 className="text-xl font-semibold mb-2">No Recommendations Found</h2>
+                                            <h2 className="mb-2 text-xl font-semibold">No Recommendations Found</h2>
                                             <p className="text-[#706f6c] dark:text-[#A1A09A]">
                                                 We couldn't find any recommendations based on your selections. Try adding different shows.
                                             </p>

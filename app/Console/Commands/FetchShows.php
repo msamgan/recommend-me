@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Actions\Shows\CreatePersonAction;
@@ -16,7 +18,7 @@ use Exception;
 use Illuminate\Console\Command;
 use JetBrains\PhpStorm\NoReturn;
 
-class FetchShows extends Command
+final class FetchShows extends Command
 {
     /**
      * The name and signature of the console command.
@@ -62,7 +64,7 @@ class FetchShows extends Command
                     $this->processShowCast(castApiData: $tvMaze->getShowCast(showId: $show['id']), show: $createdShow);
 
                 } catch (Exception $e) {
-                    $this->info('Error processing show: ' . $show['id']);
+                    $this->info('Error processing show: '.$show['id']);
                     // $this->error($e->getMessage());
 
                     continue;
@@ -89,10 +91,10 @@ class FetchShows extends Command
     {
         $genres = [];
         foreach ($genresApiData as $genre) {
-            $genreModel = Genre::query()->where('name', strtolower($genre))->first();
+            $genreModel = Genre::query()->where('name', mb_strtolower($genre))->first();
 
             if (! $genreModel) {
-                $genreModel = Genre::query()->create(['name' => strtolower($genre)]);
+                $genreModel = Genre::query()->create(['name' => mb_strtolower($genre)]);
             }
 
             $genres[] = $genreModel->id;

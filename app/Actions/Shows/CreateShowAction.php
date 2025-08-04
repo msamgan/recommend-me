@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Shows;
 
 use App\Models\Show;
 
-class CreateShowAction
+final class CreateShowAction
 {
     public static function handle(array $data): Show
     {

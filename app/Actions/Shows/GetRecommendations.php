@@ -1,20 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Shows;
 
 use App\Models\Show;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class GetRecommendations
+final class GetRecommendations
 {
     /**
      * Generate recommendations based on user's favorite shows
-     *
-     * @param array $showIds
-     * @param int $limit
-     * @param int $offset
-     * @return Collection
      */
     public function execute(array $showIds, int $limit = 10, int $offset = 0): Collection
     {
@@ -26,10 +23,10 @@ class GetRecommendations
         }
 
         // Extract all genres from the selected shows
-        $genres = $selectedShows->flatMap(fn($show) => $show->genres->pluck('id'))->unique();
+        $genres = $selectedShows->flatMap(fn ($show) => $show->genres->pluck('id'))->unique();
 
         // Extract key people (actors/crew) from the selected shows
-        $people = $selectedShows->flatMap(fn($show) => $show->people->pluck('id'))->unique();
+        $people = $selectedShows->flatMap(fn ($show) => $show->people->pluck('id'))->unique();
 
         // If no genres or people are found, return an empty collection to avoid query errors
         if ($genres->isEmpty() && $people->isEmpty()) {
@@ -66,12 +63,13 @@ class GetRecommendations
         // Calculate similarity scores and reasons for each recommended show
         $scoredShows = $recommendedShows->map(function ($show) use ($selectedShows, $genres, $people) {
             $result = $this->calculateSimilarityScore($show, $selectedShows, $genres, $people);
+
             return [
                 'show' => $show,
                 'score' => $result['score'],
                 'reasons' => $result['reasons'],
                 'display_score' => $result['display_score'],
-                'criteria_scores' => $result['criteria_scores']
+                'criteria_scores' => $result['criteria_scores'],
             ];
         });
 
@@ -95,12 +93,11 @@ class GetRecommendations
      * Calculate a similarity score between a show and the user's selected shows
      */
     private function calculateSimilarityScore(
-        Show       $show,
+        Show $show,
         Collection $selectedShows,
         Collection $selectedGenres,
         Collection $selectedPeople
-    ): array
-    {
+    ): array {
         $score = 0;
         $reasons = [];
         $criteriaScores = [];
@@ -115,8 +112,8 @@ class GetRecommendations
         if ($genreMatches > 0) {
             $commonGenres = $show->genres->whereIn('id', $selectedGenres)->pluck('name');
             if ($commonGenres->count() > 0) {
-                $reasons[] = "Matches " . $commonGenres->count() . " " . ($commonGenres->count() > 1 ? "genres" : "genre") .
-                    " with your selections";
+                $reasons[] = 'Matches '.$commonGenres->count().' '.($commonGenres->count() > 1 ? 'genres' : 'genre').
+                    ' with your selections';
             }
         }
 
@@ -125,7 +122,7 @@ class GetRecommendations
 
         // Log for debugging - this helps identify if the show has people attached
         if ($peopleIds->isEmpty()) {
-            Log::info('Show ID ' . $show->id . ' has no people');
+            Log::info('Show ID '.$show->id.' has no people');
         }
 
         $peopleMatches = $peopleIds->intersect($selectedPeople)->count();
@@ -142,7 +139,7 @@ class GetRecommendations
 
         if ($peopleMatches > 0) {
             $commonPeople = $show->people->whereIn('id', $selectedPeople)
-                ->sortByDesc(function ($person) use ($selectedShows) {
+                ->sortByDesc(function ($person) {
                     // Prioritize lead actors in the explanation
                     return $person->pivot->main_cast ?? false ? 2 : 1;
                 })
@@ -150,7 +147,7 @@ class GetRecommendations
                 ->pluck('name');
 
             if ($commonPeople->count() > 0) {
-                $reasons[] = "Features " . ($commonPeople->count() > 1 ? "actors" : "actor") . " " . $commonPeople->join(", ", " and ");
+                $reasons[] = 'Features '.($commonPeople->count() > 1 ? 'actors' : 'actor').' '.$commonPeople->join(', ', ' and ');
             }
         }
 
@@ -175,7 +172,7 @@ class GetRecommendations
 
                     // Check if the majority of selected shows are within the +/- 3 years window
                     if ($yearMatches / $selectedYears->count() >= 0.5) {
-                        $reasons[] = "Released within 3 years of shows you like";
+                        $reasons[] = 'Released within 3 years of shows you like';
                     }
                 }
             }
@@ -190,7 +187,7 @@ class GetRecommendations
             $criteriaScores['rating'] = round($ratingScore);
 
             if ($ratingDiff < 1) {
-                $reasons[] = "Has a similar rating to shows you like";
+                $reasons[] = 'Has a similar rating to shows you like';
             }
         }
 
@@ -201,7 +198,7 @@ class GetRecommendations
         if ($dominantType && $show->type === $dominantType) {
             $typeScore = 8;
             $criteriaScores['type'] = 8;
-            $reasons[] = "Matches the type of shows you prefer";
+            $reasons[] = 'Matches the type of shows you prefer';
         } else {
             $criteriaScores['type'] = 0;
         }
@@ -213,7 +210,7 @@ class GetRecommendations
         if ($dominantLang && $show->language === $dominantLang) {
             $languageScore = 8;
             $criteriaScores['language'] = 8;
-            $reasons[] = "In your preferred language";
+            $reasons[] = 'In your preferred language';
         } else {
             $criteriaScores['language'] = 0;
         }
@@ -259,7 +256,7 @@ class GetRecommendations
             'score' => $finalScore,
             'display_score' => min(100, round($finalScore)),
             'reasons' => $reasons,
-            'criteria_scores' => $criteriaScores
+            'criteria_scores' => $criteriaScores,
         ];
     }
 }

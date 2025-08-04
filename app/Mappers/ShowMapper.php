@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mappers;
 
 use Carbon\Carbon;
 
-class ShowMapper
+final class ShowMapper
 {
     public static function handle(array $apiData): array
     {
         return [
             'on_source_id' => $apiData['id'],
             'name' => $apiData['name'],
-            'type' => strtolower($apiData['type']) ?? null,
-            'language' => strtolower($apiData['language']) ?? null,
-            'status' => strtolower($apiData['status']) ?? null,
+            'type' => mb_strtolower($apiData['type']) ?? null,
+            'language' => mb_strtolower($apiData['language']) ?? null,
+            'status' => mb_strtolower($apiData['status']) ?? null,
             'runtime' => $apiData['runtime'] ?? null,
             'premiered' => Carbon::parse($apiData['premiered']) ?? null,
             'official_site' => $apiData['officialSite'] ?? null,
