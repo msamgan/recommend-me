@@ -102,7 +102,9 @@ export default function Welcome() {
                 {/* Header */}
                 <header className="w-full border-b border-[#e3e3e0] p-4 dark:border-[#3E3E3A]">
                     <div className="mx-auto flex max-w-6xl items-center justify-between">
-                        <div className="text-xl font-semibold">Recommend Me</div>
+                        <div className="flex items-center gap-2">
+                            <img src="/logo.png" alt="Recommend Me Logo" className="h-8 w-8" />
+                        </div>
                         <nav className="flex items-center gap-4">
                             {auth.user ? (
                                 <Link

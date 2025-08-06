@@ -23,7 +23,7 @@
         <style>
             html {
                 background-color: oklch(1 0 0);
-                font-size: 120%; /* Increase base font size by 20% */
+                font-size: 110%;
             }
 
             html.dark {
